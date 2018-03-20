@@ -120,6 +120,10 @@ Puppet::Type.type(:ecs_task_definition).provide(:v2, :parent => PuppetX::Puppetl
       unless cd['environment'].nil?
         cd['environment'] = serialize_environment(cd['environment'])
       end
+
+      unless cd['log_configuration'].nil?
+        cd['log_configuration'] = munge_log_configuration(cd['log_configuration'])
+      end
       cd
     }
   end
@@ -302,6 +306,30 @@ Puppet::Type.type(:ecs_task_definition).provide(:v2, :parent => PuppetX::Puppetl
     }
     data
   end
+
+  ## example:
+  #{
+  #  'log_driver' => 'syslog',
+  #  'options' => {
+  #      'tag' =>  '{{.ImageName}}\{{.Name}}\{{.ID}}'
+  #  }
+  #}
+
+  #### BEGIN HACKY GARBAGE
+  def self.munge_log_configuration(hash)
+    # munge munge munge
+    munged = {}
+
+    hash.each do |k,v|
+      if v.is_a? Hash
+        v = munge_log_configuration(v)
+      end
+
+      munged[k.to_sym] = v
+    end
+    munged
+  end
+  #### END HACKY GARBAGE
 
 end
 
